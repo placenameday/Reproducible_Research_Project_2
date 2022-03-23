@@ -1,0 +1,25 @@
+---
+title: "Analysis of U.S. Storm Damage Loss"
+author: "Chen Xing"
+date: "3/23/2022"
+output: html_document
+---
+
+## Abstract
+
+
+## Data Processing
+1. The R package `Tidyverse` is main tool in this analysis.
+```{r, package, message=FALSE}
+require(tidyverse)
+```
+2. Load the data download from assignment website without unzip.
+```{r, load data, message=FALSE}
+dt <- read_csv("repdata-data-StormData.csv.bz2")
+```
+3. Select and filter the data we need to find the answers to the two questions, and group it by severe weather types.
+```{r, filter data, message=FALSE}
+dt_1 <- dt %>% select(BGN_DATE, BGN_TIME, EVTYPE, )
+```
+
+## Results
