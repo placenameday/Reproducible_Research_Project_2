@@ -9,30 +9,52 @@ output: html_document
 
 
 ## Data Processing
-1. The R package `Tidyverse` is main tool in this analysis.
+### 1. Load Packages
+The R package `Tidyverse` is main tool in this analysis.
 ```{r, package, message=FALSE}
 require(tidyverse)
 ```
-2. Load the data download from assignment website without unzip.
+### 2. Load the data
+Thanks to the use of tidyverse, we can directly load the data downloaded from assignment website without unzipping it.
 ```{r, load data, message=FALSE}
-dt <- read_csv("repdata_data_StormData.csv.bz2")
+dt <- read_csv("repdata-data-StormData.csv.bz2")
 ```
-3. Select and filter the data we need to find the answers to the two questions, and group it by severe weather types.
+### 3. Select the Data
+We select the data we need to find the answers to these two questions, and group the data by severe weather types.
 ```{r, filter data}
 dt_1 <- dt %>% select(BGN_DATE, BGN_TIME, EVTYPE, FATALITIES, INJURIES, PROPDMG, PROPDMGEXP,CROPDMG, CROPDMGEXP) %>%
   group_by(EVTYPE)
+
 head(dt_1)
 ```
-4. Calculate the total number of fatalities and injuries between `evtype`.
+### 4. Casualty Statistics
+Calculate the total and average number of fatalities and injuries between `evtype`.
+Referring the "Storm Data Documentation", we can know that there were 48 weather types defined by the data. But there are more than 900 types in `evtype` column. Fortunately, after summary we find out most of them contain just a  tiny information which can not impact the primary purpose of the analysis. It may caused by irregular information input, so we just ignore them.
 ```{r, fatalities and injuries}
 dt_fj <- dt_1 %>% mutate(fj=FATALITIES+INJURIES) %>%
-  summarise(sumfj=sum(fj), sumi=sum(INJURIES), sumf=sum(FATALITIES)) %>%
+  summarise(sumfj=sum(fj), meanfj=mean(fj,na.rm=T),sumi=sum(INJURIES), meani=mean(INJURIES,na.rm=T),
+            sumf=sum(FATALITIES), meanf=mean(FATALITIES, na.rm=T)) %>%
   arrange(-sumfj)
+
 head(dt_fj)
 ```
-5. Calculate the total economic consequences between `evtype`.
-```{r, fatalities and injuries}
-dt_eco <- dt_1 %>% pmap()
-head(dt_fj)
+### 5. Economic loss
+Calculate the total and average economic consequences between `evtype`.
+```{r, eco loss}
+dt_eco <- dt_1 %>% rowwise() %>%
+  mutate_at(c("PROPDMGEXP","CROPDMGEXP"), ~ if (is.na(.x)) {1}
+                             else if(.x=="K"){1000}else if(.x=="M"){1000000
+                               }else if(.x=="B"){1000000000}else 1) %>%
+  mutate(DMG_ALL=PROPDMG*PROPDMGEXP+CROPDMG*CROPDMGEXP) %>%
+  ungroup() %>% group_by(EVTYPE) %>%
+  summarise(sum_ecodmg=sum(DMG_ALL), mean_ecodmg=mean(DMG_ALL,na.rm=T)) %>%
+  arrange(-sum_ecodmg)
+  
+head(dt_eco)
+```
+### 6. Frequency
+The total and average statistical information could show basic information about the impact of the severe weather. The frequency of severe weather can help us to better interpret the basic information. Here we summarize the total annual incidence and the number of occurrences in the past 5 years(latest to 2011).
+```{r, frequency}
+
 ```
 ## Results
