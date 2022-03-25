@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ## Abstract
-
+In this analysis, we use the *"Storm Data"*  from NOAA to count which event resulted in the greatest economic loss and loss of life from 1950 to 2011. The methodology of the statistics includes classification according to different types of events and calculation of totals and averages. The results show that tornado is the greatest threat to life and health, Tsunami is the most dangerous event, the flood caused the greatest total economic damage and The storm surge/tide is the single most economically costly event type.
 
 ## Data Processing
 ### 1. Load Packages
@@ -63,39 +63,95 @@ dt_tidy <- left_join(dt_fj, dt_eco)
 ```
 ## Results
 ### 1. Across the United States, which types of events (as indicated in the `EVTYPE` variable) are most **harmful** with respect to population **health**?
-
+#### Figure
+Here we make a figure contain 4 plot include:   
+- A: Total Casualty   
+- B: Average Casualty   
+- C: Total Fatality   
+- D: Average Fatality   
 ```{r, q1}
-# Calculate the 99% percentile for each variable.
+# Calculate the 80% percentile for each variable.
 quan <- dt_tidy %>% summarise(across(where(is.numeric),~ quantile(.x,0.8)))
 
+# Plot A
 p_sfj <- filter(dt_tidy, sumfj>quan$sumfj) %>%
   mutate(EVTYPE = fct_reorder(EVTYPE, -sumfj)) %>%
   ggplot(aes(EVTYPE,sumfj/1000)) + geom_col(fill="orange") +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold")) +
-  labs(x = NULL, y = "Total(Thousands)")
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 8)) +
+  labs(x = NULL, y = "Total (Thousands)")
 
-
+# Plot B
 p_mfj <- filter(dt_tidy, meanfj>quan$meanfj) %>%
   mutate(EVTYPE = fct_reorder(EVTYPE, -meanfj)) %>%
   ggplot(aes(EVTYPE,meanfj)) + geom_col(fill="orange") +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold")) +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 8)) +
   labs(x = NULL, y = "Average")
 
-
+# Plot C
 p_sf <- filter(dt_tidy, sumf>quan$sumf) %>%
   mutate(EVTYPE = fct_reorder(EVTYPE, -sumf)) %>%
   ggplot(aes(EVTYPE,sumf/1000)) + geom_col(fill="red") +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold")) +
-  labs(x = NULL, y = "Total(Thousands)")
+  labs(x = NULL, y = "Total (Thousands)") +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 8))
 
-
+# Plot D
 p_mf <- filter(dt_tidy, meanf>quan$meanf) %>%
   mutate(EVTYPE = fct_reorder(EVTYPE, -meanf)) %>%
   ggplot(aes(EVTYPE,meanf)) + geom_col(fill="red") +
-  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold")) +
-  labs(x = NULL, y = "Average")
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 8)) +
+  labs(x = NULL, y = "Average",title = waiver())
 
-ggarrange(p_sfj, p_mfj,p_sf, p_mf,labels = c("A", "B", "C", "D"), ncol = 2, nrow = 2)
+# Figure 1
+fg1 <- ggarrange(p_sfj, p_mfj,p_sf, p_mf,labels = c("A", "B", "C", "D"), ncol = 2, nrow = 2, align="hv")
+fg1 <- annotate_figure(fg1, top = text_grob("Casualty and Fatality Statistics", face = "bold", size = 14), left = text_grob("         Fatality                                          Casualty", face = "bold", size = 10, rot = 90), fig.lab = "Fig 1",fig.lab.face= "bold")
+fg1
 ```
+   
+#### Discussion
+**1. Tornado pose the greatest threat to life and health**   
+In terms of total data(Fig1 A and C), tornadoes topped the list in terms of the number of casualties as well as the number of fatalities. Therefore, it is the largest in terms of total impact in terms of population health.   
+**2. Tsunami is the most dangerous event**    
+In terms of average data(Fig1 B and D), tsunami showed its extreme danger in casualties and fatalities. In addition to tsunamis, heat and excessive heat have shown their dangers and warrant vigilance in the face of a single event.   
+   
+   
+### 1. Across the United States, which types of events have the greatest **economic consequences**?
+#### Figure
+```{r, f2}
+# Plot A
+p_seco <- filter(dt_tidy, sum_ecodmg>quan$sum_ecodmg) %>%
+  mutate(EVTYPE = fct_reorder(EVTYPE, -sum_ecodmg)) %>%
+  ggplot(aes(EVTYPE,sum_ecodmg/1000000000)) + geom_col(fill="orange") +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 12)) +
+  labs(x = NULL, y = "Total (Billion)")
 
 
+# Plot B
+p_meco <- filter(dt_tidy, mean_ecodmg>quan$mean_ecodmg) %>%
+  mutate(EVTYPE = fct_reorder(EVTYPE, -mean_ecodmg)) %>%
+  ggplot(aes(EVTYPE,mean_ecodmg/1000000)) + geom_col(fill="blue") +
+  theme(axis.text.x = element_text(angle = 20, hjust = 1, vjust = 1, size=7,face="bold"),
+        axis.text.y = element_text(size=8,face="bold"),
+        axis.title.y = element_text(size = 12)) +
+  labs(x = NULL, y = "Average (Millions)")
+
+
+fg2 <- ggarrange(p_seco, p_meco,labels = c("A", "B"), ncol = 2, nrow =1, align="hv")
+fg2 <- annotate_figure(fg2, top = text_grob("Economic Loss Statistics", face = "bold", size = 14), fig.lab = "Fig 2",fig.lab.face= "bold")
+fg2
+```
+    
+#### Discussion
+**1. The flood caused the greatest total economic damage.**   
+In terms of total data(Fig2 A), the flood caused the greatest total economic damage.   
+**2. The storm surge/tide is the single most economically costly event type.**    
+In terms of average data(Fig2 B), storm surge/tide showed its extreme destructive power in economic damage. In addition, tropical storm and tsunami also have considerable destructive power. Flood rank fifth in terms of destructive power.   
